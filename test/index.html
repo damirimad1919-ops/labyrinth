@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<title>Ойын теориясы – тест</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{--bg:#f3f5f2;--card:#fff;--ink:#17231d;--muted:#5d6b63;--line:#dbe2dc;--acc:#1f6f54;--acc2:#e7f2ec;--bad:#c2412d;--warn:#b7791f;
+--body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body)}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.mx{display:grid;grid-template-columns:repeat(2,34px);gap:3px;flex:none}
+.mx span{background:var(--card);border:1px solid var(--line);border-radius:5px;font:700 11px var(--mono);height:28px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.mx span.eq{background:var(--acc);color:#fff;border-color:var(--acc)}
+h1{margin:0;font-size:24px;line-height:1.15}
+.sub{color:var(--muted);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}
+.facts b{font:700 14px var(--mono)}
+.facts div{background:var(--acc2);border-radius:8px;padding:6px 10px;font-size:14px}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+input{width:100%;font:16px var(--body);padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input:focus,button:focus-visible{outline:3px solid #9fd3bd;outline-offset:1px}
+.btn{font:600 16px var(--body);border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:var(--acc);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.err{color:var(--bad);font-size:14px;min-height:20px;margin-top:8px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font-size:14px;color:var(--muted)}
+.timer{font:700 16px var(--mono);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:4px 10px}
+.timer.low{color:var(--bad);border-color:var(--bad)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:14px}.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .2s}
+.qn{font:700 13px var(--mono);color:var(--acc);letter-spacing:.04em}
+.qt{font-size:18px;font-weight:600;margin:6px 0 16px}
+.pts{font-weight:500;color:var(--muted);font-size:13px}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:8px;font:16px var(--body);color:var(--ink);cursor:pointer}
+.opt .l{font:700 14px var(--mono);color:var(--muted);flex:none;width:18px}
+.opt.on{border-color:var(--acc);background:var(--acc2)}.opt.on .l{color:var(--acc)}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-top:16px}
+.grid button{font:600 12px var(--mono);padding:6px 0;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
+.grid button.done{background:var(--acc2);color:var(--acc);border-color:#b9dccb}
+.grid button.cur{outline:2px solid var(--acc)}
+.score{font:700 56px/1 var(--mono);color:var(--acc);margin:10px 0}
+.score small{font-size:22px;color:var(--muted)}
+.rv{font-size:14px;border-top:1px solid var(--line);padding:8px 0;display:flex;gap:8px}
+.rv .m{flex:none;font-weight:700}.ok{color:var(--acc)}.no{color:var(--bad)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+.tw{overflow-x:auto;margin-top:8px}
+th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:600}
+td.n{font-family:var(--mono)}
+h2{font-size:18px;margin:20px 0 4px}
+.muted{color:var(--muted);font-size:14px}
+[hidden]{display:none!important}
+@media (max-width:480px){.grid{grid-template-columns:repeat(6,1fr)}h1{font-size:21px}.card{padding:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mx" aria-hidden="true"><span>4,4</span><span>1,5</span><span>5,1</span><span class="eq">2,2</span></div>
+    <div><h1 id="ttl">Ойын теориясы</h1><div class="sub" id="sub">12-дәріс бойынша тест</div></div>
+  </header>
+
+  <!-- START -->
+  <section class="card" id="vStart" hidden>
+    <div style="font-weight:600;font-size:18px">Тестке қош келдіңіз!</div>
+    <div class="facts"><div><b>30</b> сұрақ</div><div><b>40</b> балл</div><div id="fTime"><b>30</b> минут</div><div id="fStream"><b>1</b>-ағын</div></div>
+    <p class="muted" style="margin:0">Әр сұрақтың бір ғана дұрыс жауабы бар. Сұрақтар арасында еркін ауыса аласыз. Тестті бір рет қана тапсыруға болады.</p>
+    <label for="nm">Аты-жөніңіз</label><input id="nm" autocomplete="name" placeholder="Мысалы: Ахметова Аружан">
+    <label for="gr">Тобыңыз</label><input id="gr" placeholder="Мысалы: МЕК-233">
+    <div class="err" id="eStart"></div>
+    <button class="btn" id="bStart" disabled>Жүктелуде…</button>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="vQuiz" hidden>
+    <div class="top"><span id="who"></span><span class="timer" id="tm">30:00</span></div>
+    <div class="bar"><i id="pb"></i></div>
+    <div class="card">
+      <div class="qn" id="qn">СҰРАҚ 1 / 30</div>
+      <div class="qt" id="qt"></div>
+      <div id="opts"></div>
+      <div class="nav"><button class="btn ghost" id="bPrev">← Алдыңғы</button><button class="btn" id="bNext">Келесі →</button></div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn ghost" id="bFinish">Тестті аяқтау</button></div>
+  </section>
+
+  <!-- CONFIRM -->
+  <section class="card" id="vConfirm" hidden>
+    <div style="font-weight:600;font-size:18px">Тестті тапсырасыз ба?</div>
+    <p id="cInfo"></p>
+    <div class="err" id="eSend"></div>
+    <div class="row"><button class="btn" id="bSend">Тапсыру</button><button class="btn ghost" id="bBack">Сұрақтарға оралу</button></div>
+  </section>
+
+  <!-- RESULT -->
+  <section class="card" id="vResult" hidden>
+    <div class="muted" id="rWho"></div>
+    <div class="score" id="rScore">0<small> / 40</small></div>
+    <div id="rInfo" style="font-weight:600"></div>
+    <p class="muted">Нәтижеңіз мұғалімге жіберілді. Бетті жаба беруге болады.</p>
+    <div id="rList"></div>
+  </section>
+
+  <!-- ADMIN -->
+  <section class="card" id="vAdmin" hidden>
+    <div style="font-weight:600;font-size:18px">Мұғалім беті</div>
+    <div id="aLogin">
+      <label for="pw">Құпиясөз</label><input id="pw" type="password">
+      <div class="err" id="eAdm"></div>
+      <button class="btn" id="bLogin">Кіру</button>
+    </div>
+    <div id="aBody" hidden>
+      <div class="row" style="margin-top:12px"><button class="btn" id="bXlsx">Excel-ге жүктеу</button><button class="btn ghost" id="bRef">Жаңарту</button><a class="btn ghost" id="aLink" target="_blank" rel="noopener" style="text-decoration:none">Кестені ашу</a><span class="muted" id="aMsg"></span></div>
+      <div id="aTables"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbxbPpKV_mYOSYnGbQpJkbjSODBDWzAau7-vzooOt0CZ9TNPlxcinQ6hhxpfSq2tz20/exec';
+const P = new URLSearchParams(location.search);
+const MODE = P.get('admin') ? 'admin' : 'test', STREAM = P.get('a') === '2' ? '2' : '1';
+const $ = id => document.getElementById(id);
+const KEY = 'ojyn-test-v1-' + STREAM;
+const store = { get(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}}, set(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}} };
+async function run(fn, ...args){
+  let r;
+  try { r = await fetch(API, { method:'POST', body: JSON.stringify({action:fn, args}) }).then(x=>x.json()); }
+  catch(e){ throw 'Интернет байланысын тексеріңіз'; }
+  if (!r.ok) throw r.error; return r.data;
+}
+function show(v){ ['vStart','vQuiz','vConfirm','vResult','vAdmin'].forEach(x=>$(x).hidden=x!==v); window.scrollTo(0,0); }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+let S = null, D = null, tick = null;
+
+/* ---------- TEST ---------- */
+async function initTest(){
+  show('vStart'); $('fStream').innerHTML = '<b>'+STREAM+'</b>-ағын';
+  const saved = store.get();
+  if (saved && saved.result){ renderResult(saved.result, saved); return; }
+  try { D = await run('getQuestions'); } catch(e){ $('eStart').textContent = 'Сұрақтар жүктелмеді: ' + e; return; }
+  $('fTime').innerHTML = D.minutes ? '<b>'+D.minutes+'</b> минут' : 'уақыт шектеусіз';
+  if (saved && saved.q){ S = saved; D.questions = saved.q; startQuiz(); return; }
+  $('bStart').disabled = false; $('bStart').textContent = 'Тестті бастау';
+}
+$('bStart').onclick = () => {
+  const name = $('nm').value.trim(), group = $('gr').value.trim();
+  if (name.split(/\s+/).length < 2){ $('eStart').textContent = 'Тегіңіз бен атыңызды толық жазыңыз.'; return; }
+  if (!group){ $('eStart').textContent = 'Тобыңызды жазыңыз.'; return; }
+  S = { name, group, q: D.questions, a: {}, i: 0, t0: Date.now() }; store.set(S); startQuiz();
+};
+function startQuiz(){
+  show('vQuiz'); $('who').textContent = S.name + ' · ' + S.group;
+  $('grid').innerHTML = S.q.map((_,k)=>`<button data-k="${k}">${k+1}</button>`).join('');
+  $('grid').onclick = e => { const k = e.target.dataset.k; if (k!=null){ S.i=+k; renderQ(); } };
+  renderQ(); clearInterval(tick); tick = setInterval(updTimer, 1000); updTimer();
+}
+function left(){ return D.minutes ? D.minutes*60 - Math.floor((Date.now()-S.t0)/1000) : null; }
+function updTimer(){
+  const l = left(); if (l===null){ $('tm').textContent='∞'; return; }
+  const v = Math.max(0,l); $('tm').textContent = String(Math.floor(v/60)).padStart(2,'0')+':'+String(v%60).padStart(2,'0');
+  $('tm').classList.toggle('low', v<=120);
+  if (l<=0){ clearInterval(tick); send(true); }
+}
+function renderQ(){
+  const q = S.q[S.i], n = S.q.length;
+  $('qn').textContent = 'СҰРАҚ ' + (S.i+1) + ' / ' + n;
+  $('qt').innerHTML = esc(q.text) + ` <span class="pts">(${q.pts} балл)</span>`;
+  $('opts').innerHTML = q.options.map((o,j)=>`<button class="opt${S.a[q.id]===o?' on':''}" data-j="${j}"><span class="l">${'ABCD'[j]}</span><span>${esc(o)}</span></button>`).join('');
+  $('opts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ S.a[q.id]=q.options[+b.dataset.j]; store.set(S); renderQ(); });
+  $('bPrev').disabled = S.i===0; $('bNext').textContent = S.i===n-1 ? 'Аяқтау →' : 'Келесі →';
+  const done = Object.keys(S.a).length; $('pb').style.width = (done/n*100)+'%';
+  [...$('grid').children].forEach((b,k)=>{ b.classList.toggle('done', S.a[S.q[k].id]!=null); b.classList.toggle('cur', k===S.i); });
+  store.set(S);
+}
+$('bPrev').onclick = () => { if (S.i>0){ S.i--; renderQ(); } };
+$('bNext').onclick = () => { if (S.i<S.q.length-1){ S.i++; renderQ(); } else confirmFinish(); };
+$('bFinish').onclick = confirmFinish;
+$('bBack').onclick = () => show('vQuiz');
+function confirmFinish(){
+  const miss = S.q.length - Object.keys(S.a).length;
+  $('cInfo').textContent = miss ? `Сіз ${miss} сұраққа жауап бермедіңіз. Жауапсыз сұраққа балл қойылмайды.` : 'Барлық 30 сұраққа жауап бердіңіз.';
+  $('eSend').textContent=''; show('vConfirm');
+}
+$('bSend').onclick = () => send(false);
+async function send(auto){
+  $('bSend').disabled = true; $('bSend').textContent = 'Жіберілуде…';
+  if (auto){ show('vConfirm'); $('cInfo').textContent = 'Уақыт бітті. Жауаптарыңыз автоматты түрде жіберілуде.'; }
+  const payload = { name:S.name, group:S.group, stream:STREAM, answers:S.a, elapsedSec:Math.round((Date.now()-S.t0)/1000) };
+  for (let attempt=0; attempt<3; attempt++){
+    try {
+      const r = await run('submit', payload); clearInterval(tick);
+      if (r.duplicate){ S.result = {duplicate:true}; store.set(S); renderResult(S.result, S); return; }
+      S.result = r; store.set(S); renderResult(r, S); return;
+    } catch(e){ $('eSend').textContent = 'Жіберілмеді (' + e + '). Қайталап көріңіз.'; await new Promise(r=>setTimeout(r,1500*(attempt+1))); }
+  }
+  $('bSend').disabled = false; $('bSend').textContent = 'Қайта жіберу';
+}
+function renderResult(r, s){
+  show('vResult'); $('rWho').textContent = (s.name||'') + ' · ' + (s.group||'');
+  if (r.duplicate){ $('rScore').innerHTML='—'; $('rInfo').textContent='Бұл аты-жөнмен тест бұрын тапсырылған. Қайта тапсыру үшін мұғаліммен хабарласыңыз.'; $('rList').innerHTML=''; return; }
+  $('rScore').innerHTML = r.score + '<small> / ' + r.total + '</small>';
+  $('rInfo').textContent = 'Дұрыс жауап: ' + r.right + ' / ' + r.count;
+  $('rList').innerHTML = '<h2>Сіздің жауаптарыңыз</h2>' + r.review.map((x,i)=>`<div class="rv"><span class="m ${x.ok?'ok':'no'}">${x.ok?'✓':'✗'}</span><span><b>${i+1}.</b> ${esc(x.text)}<br><span class="muted">Жауабыңыз: ${x.your?esc(x.your):'жауап жоқ'}</span></span></div>`).join('');
+}
+
+/* ---------- ADMIN ---------- */
+let PW = '';
+async function loadAdmin(){
+  $('aMsg').textContent = 'Жүктелуде…';
+  try {
+    const r = await run('getResults', PW); $('aLogin').hidden = true; $('aBody').hidden = false; if (r.url) $('aLink').href = r.url;
+    $('aTables').innerHTML = ['1','2'].map(s=>{
+      const rows = r[s]; const avg = rows.length ? (rows.reduce((a,x)=>a+Number(String(x[4]).replace(',','.')),0)/rows.length).toFixed(1) : '—';
+      return `<h2>${s}-ағын</h2><div class="muted">Тапсырғандар: ${rows.length} · Орташа балл: ${avg} / 40</div>
+      <div class="tw"><table><tr><th>№</th><th>Аты-жөні</th><th>Тобы</th><th>Балл</th><th>Дұрыс</th><th>Уақыт (мин)</th><th>Тапсырған уақыты</th></tr>
+      ${rows.map((x,i)=>`<tr><td class="n">${i+1}</td><td>${esc(x[1])}</td><td>${esc(x[2])}</td><td class="n"><b>${esc(x[4])}</b></td><td class="n">${esc(x[5])}</td><td class="n">${esc(x[6])}</td><td class="n">${esc(x[0])}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Әзірге ешкім тапсырған жоқ.</td></tr>'}
+      </table></div>`;}).join('');
+    $('aMsg').textContent = 'Жаңартылды: ' + new Date().toLocaleTimeString();
+  } catch(e){ $('eAdm').textContent = e; $('aMsg').textContent = ''; }
+}
+$('bLogin').onclick = () => { PW = $('pw').value; $('eAdm').textContent=''; loadAdmin(); };
+$('pw').onkeydown = e => { if (e.key==='Enter') $('bLogin').click(); };
+$('bRef').onclick = loadAdmin;
+$('bXlsx').onclick = async () => {
+  $('aMsg').textContent = 'Excel файлы дайындалуда…';
+  try {
+    const f = await run('exportXlsx', PW);
+    const bin = atob(f.data), u8 = new Uint8Array(bin.length); for (let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([u8],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); $('aMsg').textContent = 'Файл жүктелді.';
+  } catch(e){ $('aMsg').textContent = 'Қате: ' + e; }
+};
+
+if (MODE === 'admin'){ show('vAdmin'); $('sub').textContent = 'Тест нәтижелері'; } else initTest();
+</script>
+</body>
+</html>
