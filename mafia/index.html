@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Математикалық Мафия</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=PT+Sans+Narrow:wght@700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="top">
+    <div class="brand">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="21" fill="#d2453b"/><circle cx="23" cy="23" r="15" fill="none" stroke="#ffd9d4" stroke-width="1.5" stroke-dasharray="3 3"/><text x="23" y="30" text-anchor="middle" font-family="PT Sans Narrow" font-weight="700" font-size="20" fill="#fff">∫</text></svg>
+      <div><h1 style="font-size:24px">Математикалық Мафия</h1><small>Диверсанттар · жоғары математика</small></div>
+    </div>
+    <span class="dot" id="net"><i></i><span>қосылуда…</span></span>
+  </div>
+
+  <!-- бөлме коды -->
+  <section id="vRoom" class="card hidden">
+    <h2>Ойынға кіру</h2>
+    <p class="muted">Апай берген бөлме кодын енгізіңіз (немесе QR-кодты сканерлеңіз).</p>
+    <label for="roomIn">Бөлме коды</label>
+    <input id="roomIn" autocomplete="off" autocapitalize="characters" placeholder="Мысалы: K7QP2">
+    <div class="row" style="margin-top:12px"><button class="main" id="roomGo">Кіру</button></div>
+  </section>
+
+  <!-- тіркелу -->
+  <section id="vJoin" class="card hidden">
+    <h2>Тіркелу</h2>
+    <p class="muted" id="joinWait">Апай бөлмені ашқанша күтіңіз…</p>
+    <form id="joinForm" class="hidden">
+      <label for="nameIn">Аты-жөніңіз (журналдағыдай)</label>
+      <input id="nameIn" maxlength="40" required placeholder="Мысалы: Ермекқызы Айдана">
+      <label for="teamIn">Командаңыз (үстелдегі код)</label>
+      <select id="teamIn" required></select>
+      <div class="row" style="margin-top:14px"><button class="main" type="submit">Ойынға қосылу</button></div>
+    </form>
+  </section>
+
+  <!-- ойын -->
+  <section id="vGame" class="hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div><div class="muted small">Сіз</div><div class="big" id="meName"></div></div>
+        <div style="flex:0 0 auto;text-align:right"><div class="muted small">Команда</div><div class="big" id="meTeam"></div></div>
+      </div>
+      <div class="steps" id="steps"></div>
+    </div>
+
+    <div id="roleBox" class="hidden">
+      <div class="envelope" id="env">
+        <div class="seal">ММ</div>
+        <div class="muted small">Құпия рөл</div>
+        <div id="envClosed">
+          <div class="role" style="color:var(--mute)">● ● ●</div>
+          <p class="muted">Ешкім көрмейтінін тексеріп, батырманы басып тұрыңыз.</p>
+        </div>
+        <div id="envOpen" class="hidden"></div>
+      </div>
+      <div class="row" style="margin:10px 0 14px"><button id="peek" class="gold">Рөлді көру (басып тұрыңыз)</button></div>
+    </div>
+
+    <div id="phaseBox"></div>
+    <div class="card hidden" id="lbCard"><h3>Командалар рейтингі</h3><div class="lb" id="lb"></div></div>
+  </section>
+
+  <!-- проектор экраны -->
+  <section id="vScreen" class="hidden screen"></section>
+</div>
+<div class="toast hidden" id="toast"></div>
+
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="common.js"></script>
+<script>
+{
+const $ = (id) => document.getElementById(id);
+const { esc, tex, store, PROB, ROUNDS, LETTERS } = MM;
+const SCREEN = MM.qs.get('screen') === '1';
+let room = (MM.qs.get('r') || store.get('mm_room', '') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+let P = null, conn = null, kp = null, myRole = null, endAt = 0, pick = {}, lastJoin = 0, sentAns = {}, sentVote = {};
+let pid = store.get('mm_pid'); if (!pid) { pid = MM.rid(12); store.set('mm_pid', pid); }
+const me = () => store.get('mm_me_' + room, null);
+
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.remove('hidden'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.add('hidden'), 3200); }
+function show(v) { ['vRoom', 'vJoin', 'vGame', 'vScreen'].forEach(x => $(x).classList.toggle('hidden', x !== v)); }
+function setNet(s) { const el = $('net'); el.className = 'dot ' + s; el.querySelector('span').textContent = { ok: 'байланыс бар', wait: 'қайта қосылуда…', off: 'байланыс жоқ' }[s]; }
+
+function start() {
+  if (!room) { show('vRoom'); return; }
+  store.set('mm_room', room);
+  if (SCREEN) show('vScreen'); else show(me() ? 'vGame' : 'vJoin');
+  conn = MM.connect(room, onMsg, setNet, SCREEN ? ['state'] : ['state', 'role/' + pid]);
+  render();
+}
+$('roomGo').onclick = () => { room = $('roomIn').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, ''); if (room.length < 4) return toast('Кодты тексеріңіз'); history.replaceState(null, '', '?r=' + room); start(); };
+
+function onMsg(t, data) {
+  if (t === 'state') { if (!data) return; P = data; if (P.phase === 'solve') endAt = Date.now() + (P.remain || 0); maybeJoin(); tryRole(); render(); }
+  else if (t === 'role/' + pid) { roleBox = data; myRole = null; tryRole(); render(); }
+}
+let roleBox = null;
+async function tryRole() {
+  if (!roleBox || !P || !P.tpub || myRole) return;
+  try { const key = await MM.shared(kp.priv, P.tpub); myRole = (await MM.open(key, roleBox)).r; renderRole(); } catch (e) { /* кілт ауысқан болуы мүмкін */ }
+}
+function maybeJoin() {
+  const m = me(); if (!m || !P || !conn || P.phase === 'setup') return;
+  if (P.pl && P.pl[pid]) return;
+  if (Date.now() - lastJoin < 4000) return;
+  lastJoin = Date.now();
+  conn.pub('in', { k: 'join', pid, n: m.n, t: m.t, pub: kp.pubJwk });
+}
+
+$('joinForm').onsubmit = (e) => {
+  e.preventDefault();
+  const n = $('nameIn').value.trim().replace(/\s+/g, ' '), t = $('teamIn').value;
+  if (n.length < 3 || !t) return toast('Аты-жөніңіз бен командаңызды толтырыңыз');
+  store.set('mm_me_' + room, { n, t }); lastJoin = 0; maybeJoin(); show('vGame'); render();
+};
+
+// --- рөл карточкасы ---
+const TIPS = {
+  D: ['Мақсатың: командаңды қате жауапқа апару және ұсталмау.', 'Шек: «1^∞ = 1», ½-ді немесе дәрежедегі коэффициентті жоғалт.', 'Туынды: ішкі функцияның туындысын «ұмыт».', 'Интеграл: бөліктеуде таңба, төменгі шекте F(0).', 'Матрица: «det(kA) = k·det A».', 'Кеңес: 1-раундта адал бол, сенім жина. Хатшы болғанда — абай бол.'],
+  S: ['Мақсатың: есепті дұрыс шығару және диверсантты табу.', 'Шек: алдымен анықталмағандық түрін анықта.', 'Туынды: әр ішкі функцияның туындысын тексер.', 'Интеграл: F(b) − F(a), төменгі шекті ұмытпа.', 'Матрица: екі адам бөлек есептеп, салыстырсын.', 'Кеңес: тым сенімді және тым асығыс адамға назар аудар.'],
+};
+function renderRole() {
+  if (!myRole) return;
+  const caught = P && P.pl && P.pl[pid] && P.pl[pid].st === 'caught';
+  $('env').className = 'envelope ' + myRole;
+  $('envOpen').innerHTML = `<div class="role">${myRole === 'D' ? 'ДИВЕРСАНТ' : 'СТУДЕНТ'}</div>${caught ? '<p class="pill red">Сен ұсталдың — ойыннан шықтың</p>' : ''}<ul>${TIPS[myRole].map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+}
+const peek = (on) => { if (!myRole) return; $('envClosed').classList.toggle('hidden', on); $('envOpen').classList.toggle('hidden', !on); };
+['pointerdown'].forEach(ev => $('peek').addEventListener(ev, (e) => { e.preventDefault(); peek(true); }));
+['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('peek').addEventListener(ev, () => peek(false)));
+$('peek').addEventListener('contextmenu', e => e.preventDefault());
+
+// --- көмекші ---
+const myTeam = () => (P && P.pl && P.pl[pid]) ? P.pl[pid].t : (me() || {}).t;
+const teamObj = (c) => (P.teams || []).find(x => x.c === c) || { c, v: 'I' };
+const mates = (c) => Object.entries(P.pl || {}).filter(([, p]) => p.t === c);
+const nm = (id) => (P.pl && P.pl[id]) ? P.pl[id].n : '—';
+const fmt = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const PH = { setup: 'Дайындық', lobby: 'Күту залы', solve: 'Шешу', vote: 'Тергеу', reveal: 'Нәтиже', final: 'Финал' };
+
+function steps() {
+  const r = P.round || 0;
+  return [1, 2, 3, 4].map(n => `<span class="${n < r || (n === r && (P.phase === 'reveal' || P.phase === 'final')) ? 'done' : n === r ? 'on' : ''}">${n}. ${esc(ROUNDS[n].topic)}</span>`).join('');
+}
+function probHtml(r, v, sel, key, lock) {
+  const pr = PROB[r][v];
+  return `<div class="muted small">${r}-раунд · ${esc(ROUNDS[r].topic)} · ${v} нұсқа</div>
+    <p style="margin:6px 0 0">${esc(pr.text)}</p><div class="prob">${tex(pr.tex, true)}</div>
+    ${pr.parts.map((pt, i) => `<div class="muted small" style="margin-top:6px">${esc(pt.label)}</div><div class="opts">${pt.opts.map((o, j) => {
+      let cls = 'opt'; if (sel && sel[i] === j) cls += ' sel'; if (key) { if (key[i] === j) cls += ' ok'; else if (sel && sel[i] === j) cls += ' bad'; }
+      return `<button class="${cls}" data-p="${i}" data-o="${j}" ${lock ? 'disabled' : ''}><b>${LETTERS[j]}</b><span>${tex(o)}</span></button>`;
+    }).join('')}</div>`).join('')}`;
+}
+function leaderboard(el, big) {
+  const tot = P.tot || {}; const rows = (P.teams || []).map(t => [t.c, tot[t.c] || 0]).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...rows.map(r => r[1]));
+  el.innerHTML = rows.slice(0, big ? 18 : 10).map(([c, v], i) => `<div class="lbrow ${c === myTeam() ? 'me' : ''}"><b>${i + 1}</b><b>${esc(c)}</b><div class="bar" style="width:${Math.max(2, v / max * 100)}%"></div><span class="n">${v}</span></div>`).join('') || '<p class="muted">Әзірге ұпай жоқ</p>';
+}
+
+function render() {
+  if (SCREEN) return renderScreen();
+  if (!P) { $('joinWait').textContent = 'Бөлмеге қосылуда… (код: ' + room + ')'; return; }
+  if (!me()) {
+    show('vJoin');
+    const open = P.phase !== 'setup' && P.teams && P.teams.length;
+    $('joinWait').classList.toggle('hidden', !!open); $('joinForm').classList.toggle('hidden', !open);
+    if (open && $('teamIn').dataset.n !== String(P.teams.length)) {
+      $('teamIn').dataset.n = P.teams.length;
+      const groups = [...new Set(P.teams.map(t => t.g))];
+      $('teamIn').innerHTML = '<option value="">— таңдаңыз —</option>' + groups.map(g => `<optgroup label="${esc(g)} тобы">${P.teams.filter(t => t.g === g).map(t => `<option>${esc(t.c)}</option>`).join('')}</optgroup>`).join('');
+    }
+    return;
+  }
+  show('vGame');
+  const m = me(), joined = P.pl && P.pl[pid];
+  $('meName').textContent = joined ? joined.n : m.n; $('meTeam').textContent = myTeam();
+  $('steps').innerHTML = steps();
+  $('roleBox').classList.toggle('hidden', !myRole);
+  renderRole();
+  const box = $('phaseBox'); const c = myTeam(); const t = teamObj(c); const r = P.round;
+  const st = joined ? joined.st : '';
+  let h = '';
+  if (!joined) h = `<div class="card"><p class="pulse">Апайға тіркелу жіберілді, растауды күтуде…</p></div>`;
+  else if (P.phase === 'lobby' || P.phase === 'setup') {
+    h = `<div class="card"><h2>Күту залы</h2><p>Ойын жақында басталады. ${myRole ? 'Рөліңді жоғарыдан көре аласың.' : 'Рөлдер таратылғанда, мұнда мөрленген конверт пайда болады.'}</p>
+      <div class="muted small">Командаң (${esc(c)}):</div><p>${mates(c).map(([, p]) => esc(p.n)).join(', ')}</p></div>`;
+  } else if (P.phase === 'solve') {
+    const sub = (P.subd || {})[c]; const scribe = (P.scribe || {})[c];
+    const isScribe = scribe === pid; const late = endAt - Date.now() <= 60000;
+    const can = !sub && st !== 'caught' && (isScribe || late);
+    const sel = pick[r] || []; const parts = PROB[r][t.v].parts.length;
+    h = `<div class="card ${isScribe ? 'hi' : ''}"><div class="row" style="justify-content:space-between"><div class="timer" id="tm">${fmt(endAt - Date.now())}</div>
+      <div style="flex:0 1 auto;text-align:right"><div class="muted small">Хатшы</div><div>${esc(nm(scribe))}${isScribe ? ' <span class="pill gold">сен</span>' : ''}</div></div></div>
+      ${probHtml(r, t.v, sel, null, !can)}
+      ${sub ? `<p class="pill green">Жауап тапсырылды (${esc(nm(sub.by))}). Нәтижені тергеуден кейін көресіңдер.</p>`
+        : st === 'caught' ? '<p class="muted">Сен ойыннан шықтың: командаға көмектесе алмайсың.</p>'
+        : can ? `<button class="main" id="send" ${sel.filter(x => x !== undefined).length < parts ? 'disabled' : ''}>Команданың жауабын тапсыру</button>${sentAns[r] ? ' <span class="muted small pulse">жіберілді…</span>' : ''}`
+        : `<p class="muted">Жауапты тек хатшы тапсырады. Соңғы 1 минутта кез келген мүше тапсыра алады.</p>`}</div>`;
+  } else if (P.phase === 'vote') {
+    const sub = (P.subd || {})[c]; const vc = (P.vc || {})[c] || [0, 0];
+    const caughtTeam = mates(c).some(([, p]) => p.st === 'caught');
+    if (caughtTeam) h = `<div class="card"><h2>Тергеу</h2><p>Командаңның диверсанты ұсталған. Бұл раундта тергеу жоқ — басқаларды күтіңдер.</p></div>`;
+    else if (st === 'caught') h = `<div class="card"><h2>Тергеу</h2><p>Сен дауыс бере алмайсың.</p></div>`;
+    else {
+      const targets = mates(c).filter(([id, p]) => id !== pid && p.st !== 'acq' && p.st !== 'caught');
+      const v = pick['v' + r];
+      h = `<div class="card"><h2>Тергеу: кім диверсант?</h2><p class="muted">${sub ? 'Жауап тапсырылды.' : 'Командаң жауап тапсырмады.'} Сыбырлап талқылаңдар, сосын бір адамды таңдаңдар. Кемінде ${Math.max(2, Math.ceil(mates(c).filter(([, p]) => p.st !== 'caught').length / 2))} дауыс жинаған адам айыпталады. Дауыс берді: ${vc[0]}/${vc[1]}</p>
+        <div class="opts">${targets.map(([id, p]) => `<button class="opt ${v === id ? 'sel' : ''}" data-v="${esc(id)}"><b>?</b><span>${esc(p.n)}</span></button>`).join('')}
+        <button class="opt ${v === 'pass' ? 'sel' : ''}" data-v="pass"><b>✊</b><span>Ешкімді айыптамаймын</span></button></div>
+        ${sentVote[r] ? '<p class="pill green">Дауысың қабылданды. Апай ашқанша өзгертуге болады.</p>' : ''}</div>`;
+    }
+  } else if (P.phase === 'reveal' || P.phase === 'final') {
+    h = revealHtml(r, c, t);
+    if (P.phase === 'final') h = finalHtml(c) + h;
+  }
+  box.innerHTML = h;
+  box.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { const p = +b.dataset.p, o = +b.dataset.o; pick[r] = pick[r] || []; pick[r][p] = o; render(); });
+  box.querySelectorAll('[data-v]').forEach(b => b.onclick = () => { pick['v' + r] = b.dataset.v; sentVote[r] = false; conn.pub('in', { k: 'vote', pid, r, to: b.dataset.v }); setTimeout(() => { sentVote[r] = true; render(); }, 600); render(); });
+  const sb = $('send'); if (sb) sb.onclick = () => { conn.pub('in', { k: 'ans', pid, r, a: pick[r] }); sentAns[r] = true; render(); };
+  $('lbCard').classList.toggle('hidden', !(P.phase === 'reveal' || P.phase === 'final'));
+  if (P.phase === 'reveal' || P.phase === 'final') leaderboard($('lb'));
+}
+function revealHtml(r, c, t) {
+  if (!r || !P.res || !P.res[r]) return '';
+  const R = P.res[r][c] || {}; const key = (P.key || {})[r] || {}; const ex = ((P.expl || {})[r] || {})[t.v] || '';
+  const acc = R.acc || {};
+  let accTxt = 'Тергеу: команда ешкімді айыптамады.';
+  if (acc.p) accTxt = acc.r === 'caught' ? `Тергеу: <b>${esc(nm(acc.p))}</b> — ДИВЕРСАНТ! Ұсталды (+15).` : `Тергеу: <b>${esc(nm(acc.p))}</b> — жазықсыз студент болып шықты (−10).`;
+  return `<div class="card"><h2>${r}-раунд нәтижесі</h2>
+    <p class="big">${R.pts > 0 ? '+' : ''}${R.pts || 0} ұпай ${R.sp ? '<span class="pill gold">жылдамдық +3</span>' : ''}</p>
+    <p>${accTxt}</p>
+    ${probHtml(r, t.v, R.ans, key[t.v], true)}
+    ${ex ? `<div class="card" style="background:var(--panel2)"><h3>Тұзақ қайда болды?</h3><p style="margin:0">${esc(ex)}</p></div>` : ''}</div>`;
+}
+function finalHtml(c) {
+  const g = (P.grades || {})[pid]; const div = P.div || {};
+  return `<div class="card hi"><h2>Маскалар шешілді!</h2>
+    <p>Командаңның диверсанты: <b>${esc(nm(div[c]))}</b></p>
+    ${g ? `<p class="big">Сенің бағаң: <b>${g[0]}</b> балл (${esc(g[1])})</p>` : ''}
+    <details><summary>Барлық диверсанттар</summary><p>${Object.entries(div).map(([tc, id]) => `${esc(tc)}: ${esc(nm(id))}`).join(' · ')}</p></details></div>`;
+}
+function renderScreen() {
+  const el = $('vScreen');
+  if (!P) { el.innerHTML = `<div class="card"><h2>Бөлме: ${esc(room)}</h2><p class="muted">Апай бетін күтуде…</p></div>`; return; }
+  const r = P.round; const players = Object.keys(P.pl || {}).length;
+  let mid = '';
+  if (P.phase === 'solve') mid = `<div class="timer" id="tm">${fmt(endAt - Date.now())}</div><p class="big">${r}-раунд: ${esc(ROUNDS[r].topic)} · тапсырды: ${Object.keys(P.subd || {}).length}/${(P.teams || []).length}</p>`;
+  else if (P.phase === 'vote') mid = `<h1>ТЕРГЕУ</h1><p class="big">Сыбырлап талқылаңдар. Телефоннан күдіктіге дауыс беріңдер.</p>`;
+  else if (P.phase === 'lobby' || P.phase === 'setup') mid = `<h1>Бөлме коды: ${esc(room)}</h1><p class="big">Қосылғандар: ${players}</p>`;
+  else if (P.phase === 'reveal') { const ex = (P.expl || {})[r] || {}; mid = `<h1>${r}-раунд: тұзақтар</h1><p class="big">I нұсқа: ${esc(ex.I || '')}</p><p class="big">II нұсқа: ${esc(ex.II || '')}</p>`; }
+  else if (P.phase === 'final') mid = `<h1>Маскалар шешілді!</h1>`;
+  el.innerHTML = `<div class="steps">${steps()}</div><div class="card" style="margin-top:10px">${mid}</div><div class="card"><h2>Рейтинг</h2><div class="lb" id="lbS"></div></div>`;
+  leaderboard($('lbS'), true);
+}
+setInterval(() => {
+  const tm = $('tm'); if (!tm || !P || P.phase !== 'solve') return;
+  const left = endAt - Date.now(); tm.textContent = fmt(left); tm.classList.toggle('low', left < 60000);
+  if (!SCREEN && left <= 60000 && left > 59000) render();
+}, 500);
+
+(async () => {
+  try { kp = await MM.keypair('mm_kp'); } catch (e) { toast('Браузер шифрлауды қолдамайды — басқа браузер қолданыңыз'); }
+  start();
+})();
+}
+</script>
+</body>
+</html>

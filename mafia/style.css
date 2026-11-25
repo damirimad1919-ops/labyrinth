@@ -1,0 +1,84 @@
+/*
+VOICE: тергеу кабинеті — салқын, сенімді, аздап драмалық; бірақ телефонда оқуға оңай.
+IDEA: тергеушінің ісі (папка) мен бор тақтасы: әр раунд — жаңа «іс», рөл — мөрленген конверт.
+PICTURE: мөрленген рөл карточкасы және үлкен таймер-сағат.
+COLOUR/TYPE: түнгі сия #12151c, бор-ақ #f2eee4, мөр-қызыл #d2453b, алтын #e5b04b; PT Sans Narrow + PT Sans.
+LAYOUT: бір баған телефонға, апай беті — кең кесте мен басқару панелі.
+*/
+:root{color-scheme:dark;--bg:#12151c;--panel:#1b2029;--panel2:#232a35;--line:#323b49;--ink:#f2eee4;--mute:#a5adba;--red:#d2453b;--red2:#ff6b5f;--gold:#e5b04b;--green:#4fb286;--blue:#6aa3e8}
+*{box-sizing:border-box;min-width:0}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg) radial-gradient(1200px 500px at 70% -10%,#26324a 0,transparent 60%) no-repeat;color:var(--ink);font:16px/1.5 "PT Sans",system-ui,sans-serif;min-height:100vh;overflow-x:clip}
+h1,h2,h3,.disp{font-family:"PT Sans Narrow","PT Sans",sans-serif;font-weight:700;line-height:1.08;margin:0}
+h1{font-size:clamp(28px,6vw,44px);letter-spacing:.01em}
+h2{font-size:24px;margin-bottom:10px}
+h3{font-size:19px;margin-bottom:6px}
+a{color:var(--gold)}
+.wrap{max-width:720px;margin:0 auto;padding:18px 16px 60px}
+.wide{max-width:1240px}
+.top{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{flex:none}
+.brand small{display:block;color:var(--mute);font-size:13px;font-family:"PT Sans",sans-serif;font-weight:400}
+.dot{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);white-space:nowrap}
+.dot i{width:9px;height:9px;border-radius:50%;background:#777;display:inline-block}
+.dot.ok i{background:var(--green)}.dot.wait i{background:var(--gold)}.dot.off i{background:var(--red)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+.card.hi{border-color:var(--gold)}
+.muted{color:var(--mute)}
+.small{font-size:13px}
+label{display:block;font-size:14px;color:var(--mute);margin:10px 0 4px}
+input,select{width:100%;font:16px "PT Sans",sans-serif;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;min-height:46px}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button{font:600 16px "PT Sans",sans-serif;border:0;border-radius:10px;padding:11px 18px;min-height:46px;cursor:pointer;background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+button.main{background:var(--red);border-color:var(--red);color:#fff}
+button.gold{background:var(--gold);border-color:var(--gold);color:#1a1405}
+button.ghost{background:transparent}
+button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1 1 auto}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);font-size:13px;white-space:nowrap}
+.pill.red{border-color:var(--red);color:var(--red2)}.pill.gold{border-color:var(--gold);color:var(--gold)}.pill.green{border-color:var(--green);color:var(--green)}
+.timer{font:700 clamp(44px,12vw,72px)/1 "PT Sans Narrow",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.timer.low{color:var(--red2)}
+.prob{background:#f7f4ec;color:#15171c;border-radius:12px;padding:16px;overflow-x:auto;margin:10px 0}
+.prob .katex{font-size:1.25em}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 14px}
+.opt{display:flex;align-items:center;gap:10px;text-align:left;background:var(--panel2);min-height:62px;padding:10px 12px;font-weight:400}
+.opt b{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--bg);font-family:"PT Sans Narrow";}
+.opt .katex{font-size:1.1em}
+.opt.sel{border-color:var(--gold);background:#3a311b}
+.opt.ok{border-color:var(--green);background:#173528}
+.opt.bad{border-color:var(--red);background:#3a1c1a}
+.opt:disabled{opacity:1;cursor:default}
+@media(max-width:420px){.opts{grid-template-columns:1fr}}
+/* role card */
+.envelope{position:relative;border-radius:16px;padding:22px;min-height:220px;background:linear-gradient(160deg,#2b3240,#1c212b);border:1px solid var(--line);overflow:hidden;user-select:none;-webkit-user-select:none}
+.envelope .seal{position:absolute;right:18px;top:18px;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff7a6e,#b3302a 60%,#7c1d19);box-shadow:0 4px 12px #0008,inset 0 -3px 6px #0006;display:grid;place-items:center;color:#ffd9d4;font:700 22px "PT Sans Narrow"}
+.envelope .role{font:700 clamp(36px,10vw,52px)/1 "PT Sans Narrow";letter-spacing:.04em;margin:8px 0 10px}
+.envelope.D .role{color:var(--red2)}
+.envelope.S .role{color:#9fd3b8}
+.envelope ul{margin:8px 0 0;padding-left:20px}
+.envelope li{margin:3px 0}
+.hidden{display:none!important}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{color:var(--mute);font-weight:600;font-size:13px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto}
+.lb{display:grid;gap:6px}
+.lbrow{display:grid;grid-template-columns:34px 64px 1fr 60px;align-items:center;gap:10px;padding:6px 10px;border-radius:10px;background:var(--panel2)}
+.lbrow .bar{height:10px;border-radius:6px;background:var(--blue)}
+.lbrow.me{outline:2px solid var(--gold)}
+.lbrow b{font-family:"PT Sans Narrow";font-size:18px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#000d;border:1px solid var(--line);padding:10px 16px;border-radius:10px;z-index:9;max-width:92vw}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}
+.steps span{font-size:12px;padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mute)}
+.steps span.on{border-color:var(--gold);color:var(--gold)}
+.steps span.done{color:var(--green);border-color:#2c5a46}
+.big{font-size:20px}
+.screen .timer{font-size:clamp(80px,14vw,170px)}
+.screen .lbrow{grid-template-columns:50px 90px 1fr 80px;padding:10px 14px}
+.screen .lbrow b{font-size:26px}
+@media (prefers-reduced-motion:no-preference){.pulse{animation:p 1.6s ease-in-out infinite}@keyframes p{50%{opacity:.55}}}

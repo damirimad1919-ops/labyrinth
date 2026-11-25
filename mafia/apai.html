@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Апай беті · Математикалық Мафия</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=PT+Sans+Narrow:wght@700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="style.css">
+<style>
+.ctl{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px}
+@media(max-width:860px){.ctl{grid-template-columns:1fr}}
+.code{font:700 44px/1 "PT Sans Narrow";letter-spacing:.12em;color:var(--gold)}
+#qr{background:#fff;padding:8px;border-radius:10px;width:max-content}
+#qr img,#qr canvas{display:block}
+.mini{min-height:34px;padding:4px 10px;font-size:14px}
+td .mini{min-height:30px;padding:2px 8px}
+.ok{color:var(--green)}.bad{color:var(--red2)}
+.grpin{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="wrap wide">
+  <div class="top">
+    <div class="brand">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="21" fill="#d2453b"/><circle cx="23" cy="23" r="15" fill="none" stroke="#ffd9d4" stroke-width="1.5" stroke-dasharray="3 3"/><text x="23" y="30" text-anchor="middle" font-family="PT Sans Narrow" font-weight="700" font-size="20" fill="#fff">∫</text></svg>
+      <div><h1 style="font-size:26px">Апай беті</h1><small>Математикалық Мафия: Диверсанттар · ойынды басқару</small></div>
+    </div>
+    <span class="dot" id="net"><i></i><span>қосылуда…</span></span>
+  </div>
+
+  <section id="lock" class="card" style="max-width:460px">
+    <h2>Кіру</h2>
+    <p class="muted">Бұл бет тек оқытушыға арналған. Құпиясөз жауаптар кілтін ашады.</p>
+    <label for="pw">Құпиясөз</label><input id="pw" type="password" autocomplete="current-password">
+    <div class="row" style="margin-top:12px"><button class="main" id="pwGo">Ашу</button></div>
+    <p class="bad small hidden" id="pwErr">Құпиясөз қате.</p>
+  </section>
+
+  <section id="main" class="hidden">
+    <div class="ctl">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div><div class="muted small">Бөлме коды</div><div class="code" id="roomCode">—</div>
+            <p class="small" style="margin:8px 0 4px">Студенттерге сілтеме:</p>
+            <div class="row"><input id="link" readonly style="font-size:14px"><button class="mini" id="copy" style="flex:0 0 auto">Көшіру</button></div>
+            <p class="small"><a id="screenLink" href="#" target="_blank" rel="noopener">Проектор экранын ашу ↗</a></p>
+          </div>
+          <div id="qr" style="flex:0 0 auto"></div>
+        </div>
+      </div>
+      <div class="card hi" id="ctlCard"></div>
+    </div>
+
+    <div class="card" id="setupCard"></div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2 style="margin:0">Командалар</h2>
+        <div class="row" style="flex:0 0 auto"><label class="small" style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" id="showD" style="width:auto;min-height:0"> диверсанттарды көрсету</label></div></div>
+      <div class="scroll"><table id="teamTbl"></table></div>
+      <p class="muted small">«Түзету» — шу айыппұлы (−2) немесе қолмен түзету. 100 балл = ойын ұпайы ÷ <span id="mpTxt">85</span> × 100.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card"><h2>Академиялық топтар</h2><div class="scroll"><table id="grpTbl"></table></div></div>
+      <div class="card"><h2>Номинациялар</h2><div id="noms" class="muted">Ойын соңында толады.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2 style="margin:0">Студенттер және бағалар</h2>
+        <div class="row" style="flex:0 0 auto"><select id="grpF" style="width:auto"></select><button class="gold" id="xls" style="flex:0 0 auto">Excel-ге жүктеу</button></div></div>
+      <div class="scroll"><table id="plTbl"></table></div>
+    </div>
+
+    <div class="card">
+      <h3>Басқа әрекеттер</h3>
+      <div class="row">
+        <button id="resendRoles" class="ghost">Рөлдерді қайта жіберу</button>
+        <button id="republish" class="ghost">Күйді қайта жариялау</button>
+        <button id="newGame" class="ghost">Жаңа ойын (бәрін өшіру)</button>
+      </div>
+      <p class="muted small">Ойын осы құрылғыда сақталады: ойын барысында апай бетін осы браузерде ашық ұстаңыз (жаңартуға болады). Басқа құрылғыға ауыссаңыз, студенттер рөлін қайта көре алмауы мүмкін.</p>
+    </div>
+  </section>
+</div>
+<div class="toast hidden" id="toast"></div>
+
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="common.js"></script>
+<script>
+{
+const KEYBLOB = {"salt":"f4+TDmlblzz0uUAN2Dlz4g==","iv":"2H4scoJ4nyWIZ6bO","ct":"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"};
+const $ = (id) => document.getElementById(id);
+const { esc, store, ROUNDS, PROB, LETTERS } = MM;
+let KEY = null, EXPL = null, T = null, conn = null, tkp = null, pubTimer = 0, armed = '';
+const DEF = () => ({ room: genRoom(), phase: 'setup', round: 0, endAt: 0, groups: [['А', 6], ['Б', 6], ['В', 6]], maxPts: 85,
+  teams: [], pl: {}, jseq: 0, roles: null, subs: {}, sseq: 0, votes: {}, res: {}, adj: {}, fin: false });
+function genRoom() { return Array.from(crypto.getRandomValues(new Uint8Array(5)), b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b % 32]).join(''); }
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.remove('hidden'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.add('hidden'), 3500); }
+function setNet(s) { const el = $('net'); el.className = 'dot ' + s; el.querySelector('span').textContent = { ok: 'байланыс бар', wait: 'қайта қосылуда…', off: 'байланыс жоқ' }[s]; }
+const save = () => store.set('mm_T', T);
+
+// ---------- кіру ----------
+async function unlock(pw) {
+  const enc = new TextEncoder();
+  const base = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: MM.unb64(KEYBLOB.salt), iterations: 150000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: MM.unb64(KEYBLOB.iv) }, key, MM.unb64(KEYBLOB.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+$('pwGo').onclick = async () => {
+  try { const d = await unlock($('pw').value); store.set('mm_unlock', d); boot(d); }
+  catch (e) { $('pwErr').classList.remove('hidden'); }
+};
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('pwGo').click(); });
+
+async function boot(d) {
+  KEY = d.KEY; EXPL = d.EXPL;
+  $('lock').classList.add('hidden'); $('main').classList.remove('hidden');
+  tkp = await MM.keypair('mm_tkp');
+  T = store.get('mm_T', null) || DEF(); save();
+  connect();
+  render();
+}
+function connect() {
+  if (conn) try { conn.client.end(true); } catch (e) { }
+  conn = MM.connect(T.room, onMsg, (s) => { setNet(s); if (s === 'ok') publish(true); }, ['in']);
+  const link = new URL('index.html', location.href); link.search = '?r=' + T.room + (MM.brokerKey !== 'hivemq' ? '&b=' + MM.brokerKey : '');
+  $('link').value = link.href; $('roomCode').textContent = T.room;
+  const sl = new URL(link.href); sl.searchParams.set('screen', '1'); $('screenLink').href = sl.href;
+  $('qr').innerHTML = ''; try { new QRCode($('qr'), { text: link.href, width: 150, height: 150 }); } catch (e) { }
+}
+$('copy').onclick = async () => { try { await navigator.clipboard.writeText($('link').value); toast('Сілтеме көшірілді'); } catch (e) { $('link').select(); } };
+
+// ---------- логика ----------
+const P = (pid) => T.pl[pid];
+const teamOf = (c) => T.teams.find(t => t.c === c);
+const members = (c) => Object.entries(T.pl).filter(([, p]) => p.t === c).sort((a, b) => a[1].j - b[1].j);
+const active = (c) => members(c).filter(([, p]) => p.st !== 'caught');
+const remain = () => T.endAt - Date.now();
+function scribeOf(c, r) { const a = active(c); return a.length ? a[(r - 1) % a.length][0] : null; }
+function divCaught(c) { const d = T.roles && T.roles[c]; return !!(d && T.pl[d] && T.pl[d].st === 'caught'); }
+
+async function sendRole(pid) {
+  const p = T.pl[pid]; if (!p || !p.pub || !T.roles) return;
+  try { const k = await MM.shared(tkp.priv, p.pub); conn.pub('role/' + pid, await MM.seal(k, { r: T.roles[p.t] === pid ? 'D' : 'S' }), true); } catch (e) { }
+}
+function onMsg(t, m) {
+  if (t !== 'in' || !m || typeof m !== 'object' || typeof m.pid !== 'string' || m.pid.length > 40) return;
+  const p = T.pl[m.pid];
+  if (m.k === 'join') {
+    const name = String(m.n || '').trim().slice(0, 40); if (name.length < 2 || !teamOf(m.t) || !m.pub) return;
+    if (p) { p.n = name; p.pub = m.pub; if (!T.roles) p.t = m.t; }
+    else { T.pl[m.pid] = { n: name, t: m.t, j: ++T.jseq, pub: m.pub, st: '' }; }
+    if (T.roles) sendRole(m.pid);
+  } else if (m.k === 'ans') {
+    const r = T.round; if (!p || T.phase !== 'solve' || m.r !== r || p.st === 'caught') return;
+    const c = p.t; T.subs[r] = T.subs[r] || {}; if (T.subs[r][c]) return;
+    if (m.pid !== scribeOf(c, r) && remain() > 62000) return;
+    const n = PROB[r][teamOf(c).v].parts.length;
+    if (!Array.isArray(m.a) || m.a.length !== n || m.a.some(x => !Number.isInteger(x) || x < 0 || x > 3)) return;
+    T.subs[r][c] = { pid: m.pid, a: m.a, at: Date.now(), seq: ++T.sseq };
+  } else if (m.k === 'vote') {
+    const r = T.round; if (!p || T.phase !== 'vote' || m.r !== r || p.st === 'caught' || divCaught(p.t)) return;
+    const to = m.to; const q = T.pl[to];
+    if (to !== 'pass' && !(q && q.t === p.t && to !== m.pid && q.st !== 'acq' && q.st !== 'caught')) return;
+    T.votes[r] = T.votes[r] || {}; T.votes[r][m.pid] = to;
+  } else return;
+  save(); publish(); render();
+}
+
+function dealRoles() {
+  T.roles = {};
+  T.teams.forEach(({ c }) => { const m = members(c); T.roles[c] = m.length >= 3 ? m[Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32 * m.length)][0] : null; });
+  Object.values(T.pl).forEach(p => { p.st = ''; });
+  Object.keys(T.pl).forEach(sendRole);
+}
+function reveal() {
+  const r = T.round; const res = {}; const subs = T.subs[r] || {}; const votes = T.votes[r] || {};
+  T.teams.forEach(({ c, v, g }) => {
+    const s = subs[c]; const key = KEY[r][v];
+    const ok = key.map((k, i) => !!(s && s.a[i] === k)); const pts = ok.reduce((a, o, i) => a + (o ? ROUNDS[r].pts[i] : 0), 0);
+    const acc = { p: null, r: null, tally: {} };
+    const d = T.roles && T.roles[c];
+    if (d && !divCaught(c)) {
+      const voters = active(c).map(x => x[0]);
+      voters.forEach(id => { const to = votes[id]; if (to && to !== 'pass') acc.tally[to] = (acc.tally[to] || 0) + 1; });
+      const thr = Math.max(2, Math.ceil(voters.length / 2));
+      const sorted = Object.entries(acc.tally).sort((a, b) => b[1] - a[1]);
+      if (sorted.length && sorted[0][1] >= thr && !(sorted[1] && sorted[1][1] === sorted[0][1])) {
+        acc.p = sorted[0][0];
+        if (acc.p === d) { acc.r = 'caught'; T.pl[d].st = 'caught'; T.pl[d].cr = r; } else { acc.r = 'acq'; T.pl[acc.p].st = 'acq'; }
+      }
+    }
+    res[c] = { ans: s ? s.a : null, ok, full: ok.every(Boolean), pts, sp: false, acc, seq: s ? s.seq : Infinity };
+  });
+  [...new Set(T.teams.map(t => t.g))].forEach(g => {
+    const best = T.teams.filter(t => t.g === g && res[t.c].full).sort((a, b) => res[a.c].seq - res[b.c].seq)[0];
+    if (best) res[best.c].sp = true;
+  });
+  Object.values(res).forEach(x => { x.tot = x.pts + (x.sp ? 3 : 0) + (x.acc.r === 'caught' ? 15 : x.acc.r === 'acq' ? -10 : 0); delete x.seq; });
+  T.res[r] = res;
+}
+function total(c) {
+  let s = (T.adj[c] || 0);
+  Object.values(T.res).forEach(R => { if (R[c]) s += R[c].tot; });
+  if (T.fin && T.roles && T.roles[c] && !divCaught(c)) s -= 10;
+  return s;
+}
+const ball = (pts) => Math.max(0, Math.min(100, Math.round(pts / (T.maxPts || 85) * 100)));
+function divScore(c) {
+  const d = T.roles && T.roles[c]; if (!d || !T.pl[d]) return null;
+  const cr = T.pl[d].st === 'caught' ? T.pl[d].cr : Infinity;
+  let w = 0, inn = 0;
+  Object.entries(T.res).forEach(([r, R]) => { const x = R[c]; if (!x) return; if (+r <= cr && !x.full) w++; if (x.acc && x.acc.r === 'acq') inn++; });
+  const surv = T.fin && cr === Infinity ? 1 : 0;
+  return { pts: 4 * w + 3 * inn + 5 * surv, w, inn, surv };
+}
+function studentGrade(pid) {
+  const p = T.pl[pid]; const tb = ball(total(p.t));
+  if (T.roles && T.roles[p.t] === pid) { const ds = divScore(p.t); return Math.max(tb, Math.min(100, Math.round(ds.pts / 30 * 100))); }
+  return tb;
+}
+
+function publicState() {
+  const r = T.round; const S = { room: T.room, phase: T.phase, round: r, remain: Math.max(0, remain()), teams: T.teams, tpub: tkp.pubJwk, pl: {}, tot: {} };
+  Object.entries(T.pl).forEach(([id, p]) => S.pl[id] = { n: p.n, t: p.t, st: p.st || '' });
+  if (r && (T.phase === 'solve' || T.phase === 'vote')) {
+    S.scribe = {}; S.subd = {}; T.teams.forEach(({ c }) => { S.scribe[c] = scribeOf(c, r); const s = (T.subs[r] || {})[c]; if (s) S.subd[c] = { by: s.pid }; });
+  }
+  if (T.phase === 'vote') { S.vc = {}; T.teams.forEach(({ c }) => { const a = active(c).map(x => x[0]); S.vc[c] = [a.filter(id => (T.votes[r] || {})[id]).length, a.length]; }); }
+  S.res = {}; S.key = {}; S.expl = {};
+  Object.keys(T.res).forEach(k => { S.res[k] = {}; Object.entries(T.res[k]).forEach(([c, x]) => S.res[k][c] = { ans: x.ans, pts: x.tot, sp: x.sp, acc: { p: x.acc.p, r: x.acc.r } }); S.key[k] = KEY[k]; S.expl[k] = EXPL[k]; });
+  T.teams.forEach(({ c }) => S.tot[c] = total(c));
+  if (T.fin) { S.div = {}; Object.entries(T.roles || {}).forEach(([c, id]) => { if (id) S.div[c] = id; }); S.grades = {}; Object.keys(T.pl).forEach(id => { const b = studentGrade(id); S.grades[id] = [b, MM.grade(b)[1]]; }); }
+  return S;
+}
+function publish(now) {
+  if (!conn) return; clearTimeout(pubTimer);
+  const go = () => { if (T.phase === 'setup') { conn.pub('state', { room: T.room, phase: 'setup', teams: [] }, true); return; } conn.pub('state', publicState(), true); };
+  if (now) go(); else pubTimer = setTimeout(go, 250);
+}
+
+// ---------- басқару ----------
+function setPhase(ph) { T.phase = ph; save(); publish(true); render(); }
+function act(a) {
+  if (a === 'open') {
+    const gs = [...document.querySelectorAll('[data-g]')].map(el => [el.querySelector('input[type=text]').value.trim().slice(0, 6) || '?', Math.max(1, Math.min(9, +el.querySelector('input[type=number]').value || 6))]);
+    T.groups = gs; T.maxPts = Math.max(20, Math.min(97, +$('maxPts').value || 85));
+    T.teams = []; gs.forEach(([g, n]) => { for (let i = 1; i <= n; i++) T.teams.push({ c: g + i, g, v: i % 2 ? 'I' : 'II' }); });
+    setPhase('lobby');
+  } else if (a === 'deal') { dealRoles(); save(); publish(true); render(); toast('Рөлдер таратылды'); }
+  else if (a === 'start') { T.round += 1; T.endAt = Date.now() + ROUNDS[T.round].min * 60000; T.subs[T.round] = {}; T.votes[T.round] = {}; setPhase('solve'); }
+  else if (a === 'plus') { T.endAt += 60000; save(); publish(true); render(); }
+  else if (a === 'stop') { T.endAt = Date.now(); setPhase('vote'); }
+  else if (a === 'reveal') { reveal(); setPhase('reveal'); }
+  else if (a === 'final') { T.fin = true; setPhase('final'); }
+}
+function ctlHtml() {
+  const r = T.round; const n = Object.keys(T.pl).length;
+  const ph = { setup: 'Дайындық', lobby: 'Күту залы', solve: r + '-раунд: шешу', vote: r + '-раунд: тергеу', reveal: r + '-раунд: нәтиже', final: 'Финал' }[T.phase];
+  let h = `<div class="muted small">Кезең</div><h2>${esc(ph)}</h2>`;
+  if (T.phase === 'setup') h += `<p>Төменде командалар санын тексеріп, «Бөлмені ашу» басыңыз. Сосын студенттер сілтеме арқылы тіркеле бастайды.</p>`;
+  if (T.phase === 'lobby') h += `<p>Тіркелгендер: <b>${n}</b>. Барлығы тіркелген соң рөлдерді таратыңыз (3+ адамы бар әр командаға 1 диверсант).</p>
+    <div class="row"><button class="gold" data-a="deal">${T.roles ? 'Рөлдерді қайта тарату' : 'Рөлдерді тарату'}</button><button class="main" data-a="start" ${T.roles ? '' : 'disabled'}>1-раундты бастау</button></div>`;
+  if (T.phase === 'solve') { const subs = Object.keys(T.subs[r] || {}).length; h += `<div class="timer" id="tm">--:--</div><p>${esc(ROUNDS[r].topic)} · тапсырды: <b>${subs}/${T.teams.length}</b>. Уақыт біткенде тергеу автоматты басталады.</p>
+    <div class="row"><button data-a="plus">+1 минут</button><button class="main" data-a="stop">СТОП: тергеуге өту</button></div>`; }
+  if (T.phase === 'vote') { const v = Object.keys(T.votes[r] || {}).length; h += `<p>Дауыс бергендер: <b>${v}</b>. «Бір, екі, үш — көрсет!» деп белгі беріп, телефоннан дауыс берулерін сұраңыз.</p>
+    <div class="row"><button class="main" data-a="reveal">Нәтижені ашу</button></div>`; }
+  if (T.phase === 'reveal') { const caught = Object.values(T.res[r]).filter(x => x.acc.r === 'caught').length, acq = Object.values(T.res[r]).filter(x => x.acc.r === 'acq').length;
+    h += `<p>Бұл раундта <b>${caught}</b> диверсант ұсталды, <b>${acq}</b> студент жазықсыз айыпталды.</p><p class="small muted">Тұзақ: I — ${esc(EXPL[r].I)}<br>II — ${esc(EXPL[r].II)}</p>
+    <div class="row">${r < 4 ? `<button class="main" data-a="start">${r + 1}-раундты бастау</button>` : `<button class="main" data-a="final">Финал: маскалар шешілсін!</button>`}</div>`; }
+  if (T.phase === 'final') h += `<p>Ойын аяқталды. Ұсталмаған диверсанттар үшін −10 айыппұл есептелді. Бағаларды Excel-ге жүктеңіз.</p>`;
+  return h;
+}
+function setupHtml() {
+  if (T.phase !== 'setup') return `<div class="row" style="justify-content:space-between"><div><b>Құрылым:</b> ${T.groups.map(([g, n]) => `${esc(g)} тобы — ${n} команда`).join(' · ')} · 100 балл = ${T.maxPts} ұпай</div></div>`;
+  return `<h2>Ойынды баптау</h2><p class="muted">Келген адам санына қарай: әр топтағы команда саны ≈ адам саны ÷ 5. Нақты сан белгісіз болса, әдепкі 6 команданы қалдырыңыз: бос команда ойынға кедергі жасамайды.</p>
+    <div class="grid2"><div>${T.groups.map(([g, n], i) => `<div class="grpin" data-g="${i}"><input type="text" value="${esc(g)}" aria-label="Топ атауы"><input type="number" min="1" max="9" value="${n}" aria-label="Команда саны"></div>`).join('')}
+    <div class="row"><button class="mini" id="addG">+ топ қосу</button><button class="mini" id="delG">− соңғы топты өшіру</button></div></div>
+    <div><label for="maxPts">100 баллға тең ойын ұпайы</label><input id="maxPts" type="number" min="20" max="97" value="${T.maxPts}">
+    <p class="muted small">85 = 4 раунд дұрыс + диверсант ұсталды. Қатаңырақ бағалау үшін 97.</p></div></div>
+    <div class="row" style="margin-top:10px"><button class="main" data-a="open">Бөлмені ашу</button></div>`;
+}
+function teamRows() {
+  const showD = $('showD').checked; const r = T.round;
+  const head = `<tr><th>Команда</th><th>Нұсқа</th><th>Ойыншылар</th><th>Хатшы</th><th>Тапсырды</th><th>Дауыс</th>${[1, 2, 3, 4].map(n => `<th class="n">${n}-р</th>`).join('')}<th>Түзету</th><th class="n">Жиыны</th><th class="n">Балл</th></tr>`;
+  const rows = T.teams.map(({ c, v }) => {
+    const m = members(c); const s = r ? (T.subs[r] || {})[c] : null; const key = r ? KEY[r][v] : null;
+    const sTxt = s ? s.a.map((x, i) => `<span class="${x === key[i] ? 'ok' : 'bad'}">${LETTERS[x]}</span>`).join(' ') : '—';
+    const vv = T.votes[r] || {}; const a = active(c).map(x => x[0]);
+    const d = T.roles && T.roles[c];
+    const names = m.map(([id, p]) => `${esc(p.n)}${p.st === 'caught' ? ' <span class="pill red">ұсталды</span>' : p.st === 'acq' ? ' <span class="pill green">ақталды</span>' : ''}${showD && d === id ? ' <span class="pill red">Д</span>' : ''}`).join(', ');
+    return `<tr><td><b>${esc(c)}</b></td><td>${v}</td><td style="min-width:220px">${names || '<span class="muted">бос</span>'}</td><td>${r && T.phase !== 'reveal' && T.phase !== 'final' ? esc((T.pl[scribeOf(c, r)] || {}).n || '—') : '—'}</td><td>${sTxt}</td><td>${T.phase === 'vote' ? a.filter(id => vv[id]).length + '/' + a.length : '—'}</td>
+      ${[1, 2, 3, 4].map(n => `<td class="n">${T.res[n] && T.res[n][c] ? T.res[n][c].tot : ''}</td>`).join('')}
+      <td style="white-space:nowrap"><button class="mini" data-adj="${esc(c)}" data-d="-2">−2</button> <button class="mini" data-adj="${esc(c)}" data-d="1">+1</button> <span class="muted">${T.adj[c] || 0}</span></td>
+      <td class="n"><b>${total(c)}</b></td><td class="n">${ball(total(c))}</td></tr>`;
+  });
+  return head + rows.join('');
+}
+function grpRows() {
+  const gs = [...new Set(T.teams.map(t => t.g))].map(g => { const ts = T.teams.filter(t => t.g === g); const avg = ts.length ? ts.reduce((a, t) => a + total(t.c), 0) / ts.length : 0; return { g, n: ts.length, avg, ball: ts.length ? ts.reduce((a, t) => a + ball(total(t.c)), 0) / ts.length : 0, caught: ts.filter(t => divCaught(t.c)).length }; });
+  gs.sort((a, b) => b.avg - a.avg);
+  return `<tr><th>Орын</th><th>Топ</th><th class="n">Команда</th><th class="n">Орташа ұпай</th><th class="n">Орташа балл</th><th class="n">Ұсталған Д</th></tr>` +
+    gs.map((x, i) => `<tr><td>${i + 1}</td><td><b>${esc(x.g)}</b></td><td class="n">${x.n}</td><td class="n">${x.avg.toFixed(1)}</td><td class="n">${x.ball.toFixed(1)}</td><td class="n">${x.caught}</td></tr>`).join('');
+}
+function nomsHtml() {
+  if (!Object.keys(T.res).length) return 'Ойын соңында толады.';
+  const tops = T.teams.map(t => [t.c, total(t.c)]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const sher = T.teams.filter(t => divCaught(t.c) && !Object.values(T.res).some(R => R[t.c] && R[t.c].acc.r === 'acq')).sort((a, b) => T.pl[T.roles[a.c]].cr - T.pl[T.roles[b.c]].cr)[0];
+  const iron = T.teams.filter(t => [1, 2, 3, 4].every(n => T.res[n] && T.res[n][t.c] && T.res[n][t.c].full)).map(t => t.c);
+  const ds = T.teams.map(t => [t.c, divScore(t.c)]).filter(x => x[1]).sort((a, b) => b[1].pts - a[1].pts)[0];
+  return `<p>1–3 орын: ${tops.map(([c, v]) => `<b>${esc(c)}</b> (${v})`).join(' · ')}</p>
+    <p>«Шерлок Холмс»: <b>${sher ? esc(sher.c) : '—'}</b></p><p>«Темір логика»: <b>${iron.length ? iron.map(esc).join(', ') : '—'}</b></p>
+    <p>«Үздік диверсант»: <b>${T.fin && ds ? esc(T.pl[T.roles[ds[0]]].n) + ' (' + esc(ds[0]) + ', ' + ds[1].pts + ' ұпай)' : 'финалда'}</b></p>`;
+}
+function plRows() {
+  const f = $('grpF').value; const showD = $('showD').checked || T.fin;
+  const list = Object.entries(T.pl).filter(([, p]) => !f || (teamOf(p.t) || {}).g === f).sort((a, b) => a[1].t.localeCompare(b[1].t) || a[1].n.localeCompare(b[1].n));
+  return `<tr><th>№</th><th>Аты-жөні</th><th>Команда</th><th>Рөлі</th><th class="n">Балл</th><th>Әріп</th><th>Дәстүрлі</th><th></th></tr>` + list.map(([id, p], i) => {
+    const b = studentGrade(id); const g = MM.grade(b); const isD = T.roles && T.roles[p.t] === id;
+    return `<tr><td>${i + 1}</td><td>${esc(p.n)}</td><td>${esc(p.t)}</td><td>${showD ? (isD ? '<span class="pill red">Диверсант</span>' : 'Студент') : '•••'}</td><td class="n"><b>${b}</b></td><td>${g[1]}</td><td>${g[2]}</td>
+      <td><button class="mini" data-del="${esc(id)}">${armed === 'del' + id ? 'Растау' : 'Өшіру'}</button></td></tr>`;
+  }).join('');
+}
+function render() {
+  if (!T) return;
+  $('ctlCard').innerHTML = ctlHtml(); $('setupCard').innerHTML = setupHtml(); $('mpTxt').textContent = T.maxPts;
+  $('teamTbl').innerHTML = teamRows(); $('grpTbl').innerHTML = grpRows(); $('noms').innerHTML = nomsHtml();
+  const gs = [...new Set(T.teams.map(t => t.g))]; const cur = $('grpF').value;
+  $('grpF').innerHTML = '<option value="">Барлық топтар</option>' + gs.map(g => `<option ${g === cur ? 'selected' : ''}>${esc(g)}</option>`).join('');
+  $('plTbl').innerHTML = plRows();
+  document.querySelectorAll('[data-a]').forEach(b => b.onclick = () => act(b.dataset.a));
+  document.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => { const c = b.dataset.adj; T.adj[c] = (T.adj[c] || 0) + (+b.dataset.d); save(); publish(); render(); });
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { const id = b.dataset.del; if (armed !== 'del' + id) { armed = 'del' + id; render(); return; } armed = ''; delete T.pl[id]; conn.pub('role/' + id, null, true); save(); publish(); render(); });
+  const ag = $('addG'), dg = $('delG');
+  if (ag) ag.onclick = () => { readSetup(); T.groups.push([String.fromCharCode(1040 + T.groups.length), 6]); save(); render(); };
+  if (dg) dg.onclick = () => { readSetup(); if (T.groups.length > 1) T.groups.pop(); save(); render(); };
+  tick();
+}
+function readSetup() { const els = [...document.querySelectorAll('[data-g]')]; if (els.length) T.groups = els.map(el => [el.querySelector('input[type=text]').value.trim() || '?', +el.querySelector('input[type=number]').value || 6]); const mp = $('maxPts'); if (mp) T.maxPts = +mp.value || 85; }
+$('showD').onchange = render; $('grpF').onchange = () => { $('plTbl').innerHTML = plRows(); render(); };
+$('resendRoles').onclick = () => { if (!T.roles) return toast('Рөлдер әлі таратылмаған'); Object.keys(T.pl).forEach(sendRole); toast('Рөлдер қайта жіберілді'); };
+$('republish').onclick = () => { publish(true); toast('Жарияланды'); };
+$('newGame').onclick = () => {
+  if (armed !== 'new') { armed = 'new'; $('newGame').textContent = 'Растау: бәрін өшіру'; setTimeout(() => { armed = ''; $('newGame').textContent = 'Жаңа ойын (бәрін өшіру)'; }, 4000); return; }
+  armed = ''; conn.pub('state', null, true); Object.keys(T.pl).forEach(id => conn.pub('role/' + id, null, true));
+  const groups = T.groups, mp = T.maxPts; T = DEF(); T.groups = groups; T.maxPts = mp; save(); connect(); render(); $('newGame').textContent = 'Жаңа ойын (бәрін өшіру)';
+};
+function tick() {
+  const tm = $('tm'); if (T && T.phase === 'solve') {
+    const left = remain(); if (tm) { const s = Math.max(0, Math.ceil(left / 1000)); tm.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); tm.classList.toggle('low', left < 60000); }
+    if (left <= 0) act('stop');
+  }
+}
+setInterval(tick, 500);
+
+// ---------- Excel ----------
+$('xls').onclick = () => {
+  if (!window.XLSX) return toast('Excel кітапханасы жүктелмеді');
+  const wb = XLSX.utils.book_new();
+  const pl = Object.entries(T.pl).sort((a, b) => a[1].t.localeCompare(b[1].t) || a[1].n.localeCompare(b[1].n));
+  const s1 = [['№', 'Аты-жөні', 'Топ', 'Команда', 'Рөлі', 'Балл (100)', 'Әріптік баға', 'Дәстүрлі баға', 'Команда ұпайы']].concat(pl.map(([id, p], i) => {
+    const b = studentGrade(id), g = MM.grade(b); return [i + 1, p.n, (teamOf(p.t) || {}).g || '', p.t, T.roles && T.roles[p.t] === id ? 'Диверсант' : 'Студент', b, g[1], g[2], total(p.t)]; }));
+  const ws1 = XLSX.utils.aoa_to_sheet(s1); ws1['!cols'] = [{ wch: 4 }, { wch: 32 }, { wch: 6 }, { wch: 9 }, { wch: 11 }, { wch: 10 }, { wch: 11 }, { wch: 18 }, { wch: 13 }];
+  ws1['!autofilter'] = { ref: 'A1:I' + s1.length };
+  XLSX.utils.book_append_sheet(wb, ws1, 'Апай парағы');
+  const s2 = [['Команда', 'Топ', 'Нұсқа', 'Ойыншылар', '1-раунд', '2-раунд', '3-раунд', '4-раунд', 'Түзету', 'Ұсталмаған Д (−10)', 'Жиыны', 'Балл (100)', 'Орын']];
+  const ranked = T.teams.map(t => [t, total(t.c)]).sort((a, b) => b[1] - a[1]);
+  ranked.forEach(([t, tot], i) => s2.push([t.c, t.g, t.v, members(t.c).length, ...[1, 2, 3, 4].map(n => T.res[n] && T.res[n][t.c] ? T.res[n][t.c].tot : ''), T.adj[t.c] || 0, T.fin && T.roles && T.roles[t.c] && !divCaught(t.c) ? -10 : 0, tot, ball(tot), i + 1]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s2), 'Командалар');
+  const gs = [...new Set(T.teams.map(t => t.g))].map(g => { const ts = T.teams.filter(t => t.g === g); return [g, ts.length, +(ts.reduce((a, t) => a + total(t.c), 0) / (ts.length || 1)).toFixed(1), +(ts.reduce((a, t) => a + ball(total(t.c)), 0) / (ts.length || 1)).toFixed(1), ts.filter(t => divCaught(t.c)).length]; }).sort((a, b) => b[2] - a[2]);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Топ', 'Командалар', 'Орташа ұпай', 'Орташа балл', 'Ұсталған диверсанттар', 'Орын']].concat(gs.map((x, i) => [...x, i + 1]))), 'Топтар');
+  const s4 = [['Команда', 'Диверсант', 'Ол ұсталмай тұрғандағы қате раундтар', 'Жазықсыз айыпталғандар', 'Ұсталмады', 'Жеке ұпай', 'Жеке балл']];
+  T.teams.forEach(t => { const ds = divScore(t.c); if (ds) s4.push([t.c, T.pl[T.roles[t.c]].n, ds.w, ds.inn, ds.surv ? 'иә' : 'жоқ', ds.pts, Math.min(100, Math.round(ds.pts / 30 * 100))]); });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s4), 'Диверсанттар');
+  XLSX.writeFile(wb, 'Математикалық-Мафия-нәтиже-' + new Date().toISOString().slice(0, 10) + '.xlsx');
+};
+
+const saved = store.get('mm_unlock', null);
+if (saved && saved.KEY) boot(saved);
+}
+</script>
+</body>
+</html>
